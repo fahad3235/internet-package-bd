@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Internet Package BD</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="head-row">
+      <div>
+        <h1 data-i18n="appTitle">Internet Package BD</h1>
+        <p class="sub" data-i18n="appSubtitle">Compare mobile data packs and plan your monthly data — offline, in English and Bangla.</p>
+      </div>
+      <button id="langBtn" class="lang-btn" type="button">বাংলা</button>
+    </div>
+    <div class="stats" id="statsBar">
+      <div class="stat"><span class="stat-num" id="statTotal">0</span><span class="stat-label" data-i18n="statsTotal">Packages</span></div>
+      <div class="stat"><span class="stat-num" id="statCheapest">—</span><span class="stat-label" data-i18n="statsCheapest">Cheapest per GB</span></div>
+      <div class="stat"><span class="stat-num" id="statAvg">—</span><span class="stat-label" data-i18n="statsAvg">Average price</span></div>
+      <div class="stat"><span class="stat-num" id="statTracked">—</span><span class="stat-label" data-i18n="statsActivePack">Tracked pack</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="compare" type="button" data-i18n="tabCompare">Compare</button>
+    <button class="tab" data-tab="planner" type="button" data-i18n="tabPlanner">Data Planner</button>
+    <button class="tab" data-tab="mypack" type="button" data-i18n="tabMyPack">My Pack</button>
+    <button class="tab" data-tab="packages" type="button" data-i18n="tabPackages">Packages</button>
+  </nav>
+
+  <!-- ============ COMPARE ============ -->
+  <section id="tab-compare" class="panel">
+    <p class="note" data-i18n="noRatesNote">No operator prices are shipped — rates change often. Add the packs you see in your operator's app or USSD menu, and the comparison updates instantly.</p>
+    <div class="filters">
+      <label><span data-i18n="filterOperator">Operator</span>
+        <select id="fltOperator"></select>
+      </label>
+      <label><span data-i18n="filterType">Pack type</span>
+        <select id="fltType"></select>
+      </label>
+      <label class="check"><input type="checkbox" id="fltActive" checked> <span data-i18n="onlyActive">Active packs only</span></label>
+    </div>
+    <div id="compareList" class="pack-list"></div>
+    <p id="compareEmpty" class="empty hidden" data-i18n="emptyPackages">No packages yet. Add your first pack below, or load the 3 labelled example packs.</p>
+    <p id="compareNoMatch" class="empty hidden" data-i18n="noMatch">No packs match these filters.</p>
+    <button id="loadExamplesBtn" class="btn secondary" type="button" data-i18n="loadExamples">Load 3 example packs</button>
+  </section>
+
+  <!-- ============ PLANNER ============ -->
+  <section id="tab-planner" class="panel hidden">
+    <h2 data-i18n="plannerTitle">How much data do you need each month?</h2>
+    <p class="note" data-i18n="plannerHint">Enter your usual daily use. Rates are estimates — video quality changes the number a lot.</p>
+    <div class="form-grid">
+      <label><span data-i18n="videoHours">Video streaming (hours / day)</span>
+        <input id="plVideo" type="number" min="0" max="24" step="0.5" value="1">
+      </label>
+      <label><span data-i18n="videoQuality">Video quality</span>
+        <select id="plQuality">
+          <option value="low" data-i18n="qualityLow">Low (360p)</option>
+          <option value="std" selected data-i18n="qualityStd">Standard (480p)</option>
+          <option value="hd" data-i18n="qualityHd">HD (720p+)</option>
+        </select>
+      </label>
+      <label><span data-i18n="socialHours">Social media (hours / day)</span>
+        <input id="plSocial" type="number" min="0" max="24" step="0.5" value="2">
+      </label>
+      <label><span data-i18n="browseHours">Browsing &amp; chat (hours / day)</span>
+        <input id="plBrowse" type="number" min="0" max="24" step="0.5" value="1">
+      </label>
+      <label><span data-i18n="musicHours">Music streaming (hours / day)</span>
+        <input id="plMusic" type="number" min="0" max="24" step="0.5" value="1">
+      </label>
+    </div>
+    <p id="plError" class="error hidden"></p>
+    <div class="result-card">
+      <div><span data-i18n="monthlyNeed">Estimated monthly need</span><strong id="plNeed">—</strong></div>
+      <div><span data-i18n="suggestedSize">Suggested pack size</span><strong id="plSuggest">—</strong></div>
+    </div>
+    <p class="note small" data-i18n="monthlyNeedNote">Estimate only — actual use varies with video quality, app updates and background data.</p>
+    <h3 data-i18n="matchingPacks">Packs that cover your need</h3>
+    <div id="matchList" class="pack-list"></div>
+    <p id="matchEmpty" class="empty hidden" data-i18n="noMatchingPacks">No saved pack covers this need yet — add packs on the Packages tab.</p>
+  </section>
+
+  <!-- ============ MY PACK ============ -->
+  <section id="tab-mypack" class="panel hidden">
+    <h2 data-i18n="myPackTitle">Track the pack you are using now</h2>
+    <div id="trackedCard" class="result-card hidden">
+      <div class="tracked-head">
+        <strong id="trName">—</strong>
+        <span id="trStatus" class="badge">—</span>
+      </div>
+      <div class="progress"><div id="trBar" class="bar" style="width:0%"></div></div>
+      <p class="tracked-line"><span id="trUsed">—</span> <span data-i18n="dataLeft">data left</span>: <strong id="trLeft">—</strong> · <span id="trDays">—</span></p>
+      <p class="tracked-line"><span data-i18n="dailyBudget">daily budget left</span>: <strong id="trBudget">—</strong> · <span data-i18n="validity">Validity</span> <span data-i18n="days">days</span>: <strong id="trExpiry">—</strong></p>
+      <div class="form-grid">
+        <label><span data-i18n="usedSoFar">Data used so far (GB)</span>
+          <input id="trUsedInput" type="number" min="0" step="0.1" value="0">
+        </label>
+      </div>
+      <p id="trError" class="error hidden"></p>
+      <div class="btn-row">
+        <button id="trUpdateBtn" class="btn" type="button" data-i18n="updateUsed">Update used data</button>
+        <button id="trStopBtn" class="btn danger" type="button" data-i18n="stopTracking">Stop tracking</button>
+      </div>
+    </div>
+    <div id="trackForm" class="form-grid">
+      <label><span data-i18n="pickPack">Choose a pack</span>
+        <select id="trPackSelect"></select>
+      </label>
+      <label><span data-i18n="startDate">Start date</span>
+        <input id="trStartDate" type="date">
+      </label>
+      <label><span data-i18n="usedSoFar">Data used so far (GB)</span>
+        <input id="trUsedNew" type="number" min="0" step="0.1" value="0">
+      </label>
+    </div>
+    <p id="trFormError" class="error hidden"></p>
+    <div class="btn-row">
+      <button id="trStartBtn" class="btn" type="button" data-i18n="saveMyPack">Start tracking</button>
+    </div>
+    <p id="myPackEmpty" class="empty hidden" data-i18n="myPackEmpty">No active pack tracked. Pick a pack and a start date below.</p>
+  </section>
+
+  <!-- ============ PACKAGES ============ -->
+  <section id="tab-packages" class="panel hidden">
+    <h2 data-i18n="addPackTitle">Add a package</h2>
+    <form id="packForm" class="form-grid" novalidate>
+      <label><span data-i18n="filterOperator">Operator</span>
+        <select id="pfOperator"></select>
+      </label>
+      <label><span data-i18n="filterType">Pack type</span>
+        <select id="pfType"></select>
+      </label>
+      <label><span data-i18n="packName">Pack name</span>
+        <input id="pfName" type="text" maxlength="80" data-i18n-ph="packNamePh" placeholder="e.g. 15 GB / 30 days">
+      </label>
+      <label><span data-i18n="dataGBLabel">Data (GB)</span>
+        <input id="pfData" type="number" min="0.1" max="1000" step="0.1">
+      </label>
+      <label><span data-i18n="validityLabel">Validity (days)</span>
+        <input id="pfValidity" type="number" min="1" max="365" step="1">
+      </label>
+      <label><span data-i18n="priceLabel">Price (BDT ৳)</span>
+        <input id="pfPrice" type="number" min="1" max="100000" step="1">
+      </label>
+      <label class="wide"><span data-i18n="notesLabel">Notes (optional)</span>
+        <input id="pfNotes" type="text" maxlength="120">
+      </label>
+    </form>
+    <p id="pfError" class="error hidden"></p>
+    <div class="btn-row">
+      <button id="pfSaveBtn" class="btn" type="button" data-i18n="savePack">Save pack</button>
+      <button id="pfCancelBtn" class="btn secondary hidden" type="button" data-i18n="cancelEdit">Cancel</button>
+    </div>
+    <h3 data-i18n="tabPackages">Packages</h3>
+    <div id="manageList" class="pack-list"></div>
+    <p id="manageEmpty" class="empty hidden" data-i18n="emptyPackages">No packages yet. Add your first pack below, or load the 3 labelled example packs.</p>
+    <hr>
+    <div class="btn-row">
+      <button id="exportBtn" class="btn secondary" type="button" data-i18n="exportBtn">Export JSON</button>
+      <button id="importBtn" class="btn secondary" type="button" data-i18n="importBtn">Import JSON</button>
+      <input id="importFile" type="file" accept="application/json,.json" class="hidden">
+      <button id="eraseBtn" class="btn danger" type="button" data-i18n="eraseBtn">Erase all data</button>
+    </div>
+    <div id="eraseBox" class="erase-box hidden">
+      <p data-i18n="eraseConfirm">Type DELETE to erase everything</p>
+      <input id="eraseInput" type="text" data-i18n-ph="erasePlaceholder" placeholder="Type DELETE">
+      <button id="eraseConfirmBtn" class="btn danger" type="button" data-i18n="eraseBtn">Erase all data</button>
+    </div>
+    <p id="dataMsg" class="note hidden"></p>
+  </section>
+
+  <footer>
+    <p data-i18n="footerNote">Offline app — your packs stay in this browser. Prices shown are the ones you entered; check your operator's app or USSD menu before buying.</p>
+  </footer>
+</main>
+
+<script src="js/core.js"></script>
+<script src="js/data.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
